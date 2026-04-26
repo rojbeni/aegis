@@ -1,0 +1,10 @@
+[project]
+name = "aegis"
+version = "1.0.0"
+requires-python = ">=3.10"
+dependencies = [
+    "bs4","lxml","pandas","pypsexec","alembic","ruff","pydantic-settings","celery[redis]","uvicorn","fastapi","psycopg2","python-multipart"
+]
+
+[tool.setuptools.packages.find]
+include = ["app*"]

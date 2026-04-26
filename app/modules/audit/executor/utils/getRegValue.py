@@ -1,0 +1,292 @@
+import logging
+import re
+import sys
+
+if sys.platform == "win32":
+    import winreg
+else:
+    winreg = None
+
+from pypsexec.client import Client
+
+from app.modules.audit.schemas import Audit
+from app.shared.regex import is_likely_regex
+
+# Record the start time
+
+
+def get_registry_value_local(path, name):
+    if winreg is None:
+        raise RuntimeError("winreg is only available on Windows systems.")
+    key = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, path)
+    value, regtype = winreg.QueryValueEx(key, name)
+    winreg.CloseKey(key)
+    return value
+
+
+def get_registry_value_list(args_list):
+
+    try:
+        win_client = Client("", username="", password="")
+        win_client.connect()
+        win_client.create_service()
+        # args = "-command \"Get-ItemPropertyValue -Path 'HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon' -Name 'CachedLogonsCount'\""
+        # args = f"-command Get-ItemPropertyValue -Path '{reg_key}' -Name '{reg_item}'"
+
+        result = ""
+
+        if args_list == [""]:
+            return [""]
+
+        for arg in args_list:
+            # print(arg)
+            stdout, stderr, rc = win_client.run_executable(
+                "powershell.exe", arguments=arg
+            )
+
+            output = stdout.decode("utf-8").replace("\r\n", "")
+            result = result + output
+
+        print("here1")
+    finally:
+        win_client.remove_service()
+        win_client.disconnect()
+        return result
+
+
+def get_reg_value(ip, reg_key, reg_item):
+    try:
+        win_client = Client(ip[0], username=ip[1], password=ip[2])
+        win_client.connect()
+        win_client.create_service()
+        arg = f"""
+        Get-ItemPropertyValue -Path '{reg_key}' -Name '{reg_item}'
+        """
+        stdout, stderr, rc = win_client.run_executable("powershell.exe", arguments=arg)
+
+        output = stdout.decode("utf-8").replace("\r\n", "")
+
+    finally:
+        try:
+            win_client.remove_service()
+        except Exception:
+            pass
+        try:
+            win_client.disconnect()
+        except Exception:
+            pass
+        return output
+
+
+# reg_key = 'HKLM:\Software\Microsoft\Windows Nt\Currentversion'
+# reg_item = 'ProductName'
+
+# print(get_reg_value(['10.10.123.43','admin','AskDNV8!'],reg_key,reg_item))
+
+
+def compare_reg_value(audit: Audit, stdout: str):
+
+    # registry value
+    # df = data_dict["REGISTRY_SETTING"]
+    # checklist_values = df["Checklist"].values
+    # idx_values = df["Index"].values
+    # value_data_values = df["Value Data"].values
+    # reg_option = df["Reg Option"].values
+    # value_data_values = audit.rule.value_data
+    # description = audit.rule.description
+    reg_option = audit.rule.reg_option
+    # description_values = audit.rule.description
+
+    # actual_value_list = actual_value_dict["REGISTRY_SETTING"]
+
+    pass_result = False
+    # if val == 1
+    expected_value = str(audit.rule.value_data).lower()
+    description = audit.rule.description
+    logging.info(f"stdout {stdout}")
+    logging.info(f"expected value : {expected_value}")
+    logging.info(f"description : {description}")
+
+    if stdout == "":
+        stdout = "Null"
+    actual_value = stdout.lower()
+
+    if actual_value == "null":
+        if (
+            reg_option == "CAN_BE_NULL"
+            or "NotInstalled" in description
+            or "Named Pipes that can be accessed anonymously" in description
+        ):
+            pass_result = True
+    else:
+        if is_likely_regex(expected_value):
+            if re.match(expected_value, actual_value):
+                pass_result = True
+        elif "Remotely accessible registry paths" in description:
+            expected_value = expected_value.lower().split(" && ")[0].strip()
+            actual_value = [s.lower() for s in actual_value]
+            actual_value = "".join(actual_value)
+            if expected_value == actual_value:
+                pass_result = True
+        elif "||" in expected_value:
+            expected_value = expected_value.split(" || ")
+            if str(actual_value) in expected_value:
+                pass_result = True
+        elif "[" in expected_value:
+            vals = expected_value.strip("[]").split("..")
+            if len(vals) == 2:
+                min_val = vals[0]
+                max_val = vals[1]
+
+                if min_val == "min":
+                    if int(actual_value) <= int(max_val):
+                        pass_result = True
+                elif max_val == "max":
+                    if int(actual_value) >= int(min_val):
+                        pass_result = True
+                else:
+                    if int(actual_value) >= int(min_val) and int(actual_value) <= int(
+                        max_val
+                    ):
+                        pass_result = True
+            else:
+                if str(expected_value) == str(actual_value):
+                    pass_result = True
+        else:
+            if str(expected_value) == str(actual_value):
+                pass_result = True
+
+    audit.passed = pass_result
+    # if pass_result:
+    #     print(
+    #         f"{ip_addr} | {idx_values[idx]}: PASSED | Expected: {expected_value} | Actual: {actual_value}"
+    #     )
+    #     result_lists.append("PASSED")
+    # else:
+    #     print(
+    #         f"{ip_addr} | {idx_values[idx]}: FAILED | Expected: {expected_value} | Actual: {actual_value}"
+    #     )
+    #     result_lists.append("FAILED")
+
+    # else:
+    #     actual_value_list.append("")
+    #     result_lists.append("")
+
+    # col_name1 = ip_addr + " | Actual Value"
+    # col_name2 = ip_addr + " | Result"
+
+    # df[col_name1] = actual_value_list
+    # df[col_name2] = result_lists
+
+    # return df
+
+
+def get_registry_actual_value(win_client: Client, audit: Audit) -> str:
+    try:
+        stdout, stderr, rc = win_client.run_executable(
+            "powershell.exe", arguments=audit.check_data
+        )
+        return stdout.decode("utf-8").replace("\r\n", "")
+    except Exception as e:
+        logging.error(f"error remote machine: {str(e)}")
+        return ""
+
+
+def compare_reg_value_local(data_dict):
+
+    # registry value
+    df = data_dict["REGISTRY_SETTING"]
+    checklist_values = df["Checklist"].values
+    idx_values = df["Index"].values
+    description_values = df["Description"].values
+    value_data_values = df["Value Data"].values
+    reg_option = df["Reg Option"].values
+    actual_value_list = df["Actual Value"].values
+
+    result_lists = []
+
+    for idx, val in enumerate(checklist_values):
+        pass_result = False
+
+        # if val == 1
+
+        expected_value = str(value_data_values[idx]).lower()
+        description = description_values[idx]
+
+        actual_value_list[idx] = actual_value_list[idx].strip()
+
+        if actual_value_list[idx] == "":
+            actual_value_list[idx] = "Null"
+
+        actual_value = actual_value_list[idx].lower()
+
+        if actual_value == "null":
+            if (
+                reg_option[idx] == "CAN_BE_NULL"
+                or "Not Installed" in description
+                or "Named Pipes that can be accessed anonymously" in description
+            ):
+                pass_result = True
+        else:
+            if "Remotely accessible registry paths" in description:
+                expected_value_2 = expected_value.replace(" ", "")
+                actual_value_2 = actual_value.replace(" ", "")
+
+                if expected_value_2 == actual_value_2:
+                    pass_result = True
+
+            elif "||" in expected_value:
+                expected_value = expected_value.split(" || ")
+                if str(actual_value) in expected_value:
+                    pass_result = True
+
+            elif "[" in expected_value:
+                vals = expected_value.strip("[]").split("..")
+                if len(vals) == 2:
+                    min_val = vals[0]
+                    max_val = vals[1]
+
+                    if min_val == "min":
+                        if int(actual_value) <= int(max_val):
+                            pass_result = True
+                    elif max_val == "max":
+                        if int(actual_value) >= int(min_val):
+                            pass_result = True
+                    else:
+                        if int(actual_value) >= int(min_val) and int(
+                            actual_value
+                        ) <= int(max_val):
+                            pass_result = True
+                else:
+                    if str(expected_value) == str(actual_value):
+                        pass_result = True
+
+            else:
+                if str(expected_value) == str(actual_value):
+                    pass_result = True
+
+        if pass_result:
+            print(
+                f"{idx_values[idx]}: PASSED | Expected: {expected_value} | Actual: {actual_value}"
+            )
+            result_lists.append("PASSED")
+        else:
+            print(
+                f"{idx_values[idx]}: FAILED | Expected: {expected_value} | Actual: {actual_value}"
+            )
+            result_lists.append("FAILED")
+
+        # else:
+        #     actual_value_list.append("")
+        #     result_lists.append("")
+
+    col_name1 = "ip_addr" + " | Actual Value"
+    col_name2 = "ip_addr" + " | Result"
+
+    df = df.rename(columns={"Actual Value": col_name1})
+    df[col_name1] = actual_value_list
+    df[col_name2] = result_lists
+
+    # data_dict["REGISTRY_SETTING"] = df
+
+    return df

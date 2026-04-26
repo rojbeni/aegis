@@ -1,0 +1,8 @@
+**/__pycache__
+.vscode/
+.venv/
+.env
+.agent/
+build/
+aegis.egg-info/
+.ruff_cache/

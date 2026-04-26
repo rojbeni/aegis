@@ -1,0 +1,54 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: aegis
+      POSTGRES_USER: aegis
+      POSTGRES_PASSWORD: aegis
+    ports:
+      - "5432:5432"
+    networks:
+      - aegis-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - aegis-net
+
+  aegis:
+    image: rojbeni/aegis:latest
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://aegis:aegis@postgres:5432/aegis
+      - FRONTEND_ORIGIN=${FRONTEND_ORIGIN:-http://localhost:5173}
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+    networks:
+      - aegis-net
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  web:
+    image: rojbeni/aegis-web:latest
+    ports:
+      - "80:80"
+    networks:
+      - aegis-net
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+volumes:
+  postgres_data:
+
+networks:
+  aegis-net:
+    driver: overlay
