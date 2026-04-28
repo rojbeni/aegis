@@ -1,14 +1,14 @@
 import { motion, AnimatePresence } from "framer-motion"
-import { X, ShieldAlert, ShieldCheck, AlertTriangle, Info, BookOpen, Wrench, Terminal, ChevronLeft, ChevronRight, Hash } from "lucide-react"
+import { X, ShieldAlert, ShieldCheck, AlertTriangle, BookOpen, Wrench, Terminal, ChevronLeft, ChevronRight } from "lucide-react"
 import { useEffect } from "react"
 import type { AuditItemOut } from "@/types/audits"
-import type { AuditItemResponse } from "@/types/benchmarks"
+import type { RuleResponse } from "@/types/benchmarks"
 
 interface AuditItemDetailModalProps {
   isOpen: boolean
   onClose: () => void
   result: AuditItemOut | null
-  auditItem: AuditItemResponse | null
+  auditItem: RuleResponse | null
   currentIndex?: number
   totalCount?: number
   onNavigate?: (index: number) => void
@@ -108,7 +108,7 @@ export function AuditItemDetailModal({
                       <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded ${status.bg} ${status.color} border ${status.border}`}>
                         {status.label}
                       </span>
-                      <span className="text-[10px] font-mono text-slate-500 uppercase tracking-tighter">ID: {auditItem?.block_id || "N/A"}</span>
+                      <span className="text-[10px] font-mono text-slate-500 uppercase tracking-tighter">ID: {auditItem?.index || "N/A"}</span>
                     </div>
                     <h2 className="text-xl font-bold text-white tracking-tight leading-tight">
                       {auditItem?.description || "Audit Item Details"}
@@ -186,7 +186,7 @@ export function AuditItemDetailModal({
                     <div className="text-sm text-slate-400 leading-relaxed bg-slate-900/30 p-1 rounded-lg">
                       {auditItem?.solution ? (
                         <div className="space-y-2">
-                          {auditItem.solution.split('\n').map((line, i) => (
+                          {auditItem.solution.split('\n').map((line: string, i: number) => (
                             <p key={i}>{line}</p>
                           ))}
                         </div>
@@ -203,7 +203,7 @@ export function AuditItemDetailModal({
                     <span className="text-[10px] font-bold text-slate-600 uppercase tracking-widest">Reference Frameworks</span>
                     <div className="flex gap-2">
                       {auditItem?.reference && auditItem.reference.length > 0 ? (
-                        auditItem.reference.map((ref, i) => (
+                        auditItem.reference.map((ref: string, i: number) => (
                           <span key={i} className="text-[10px] font-bold text-indigo-400/80 bg-indigo-500/5 border border-indigo-500/10 px-2 py-0.5 rounded uppercase">
                             {ref}
                           </span>

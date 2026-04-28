@@ -11,6 +11,9 @@ export interface RuleResponse {
   audit_policy_subcategory?: string
   right_type?: string
   value_data?: string
+  block_id?: string
+  info?: string
+  reference?: string[]
 }
 
 export interface BenchmarkResponse {

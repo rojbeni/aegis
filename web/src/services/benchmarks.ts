@@ -1,5 +1,5 @@
 import api from "./api"
-import type { BenchmarkResponse, AuditItemResponse } from "@/types/benchmarks"
+import type { BenchmarkResponse, RuleResponse } from "@/types/benchmarks"
 
 const benchmarkService = {
   listBenchmarks: async (): Promise<BenchmarkResponse[]> => {
@@ -12,8 +12,8 @@ const benchmarkService = {
     return response.data
   },
 
-  getBenchmarkItems: async (id: string): Promise<AuditItemResponse[]> => {
-    const response = await api.get<AuditItemResponse[]>(`/benchmarks/${id}/items`)
+  getBenchmarkItems: async (id: string): Promise<RuleResponse[]> => {
+    const response = await api.get<RuleResponse[]>(`/benchmarks/${id}/items`)
     return response.data
   },
 

@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Play, Clock, Radar, Activity, Lightbulb, Zap, Loader2, AlertCircle } from "lucide-react"
+import { Play, Clock, Radar, Activity, Loader2 } from "lucide-react"
 import { motion } from "framer-motion"
 import auditService from "@/services/audits"
 import benchmarkService from "@/services/benchmarks"
 import type { ScanResponse } from "@/types/audits"
 import type { BenchmarkResponse } from "@/types/benchmarks"
 
-import { ChevronLeft, ChevronRight, Filter, AlertCircle as AlertIcon } from "lucide-react"
+import { ChevronLeft, ChevronRight, AlertCircle as AlertIcon } from "lucide-react"
 import { NewScanModal } from "./new-scan-modal"
 import { ScanAnalysisView } from "./scan-analysis-view"
 
@@ -185,11 +185,10 @@ export default function AuditsPage() {
                       setStateFilter(state === 'ALL' ? undefined : state)
                       setPage(0)
                     }}
-                    className={`px-3 py-1.5 text-[10px] font-black rounded-lg transition-all uppercase tracking-[0.1em] ${
-                      (state === 'ALL' ? !stateFilter : stateFilter === state)
-                        ? 'bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.4)]'
-                        : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'
-                    }`}
+                    className={`px-3 py-1.5 text-[10px] font-black rounded-lg transition-all uppercase tracking-[0.1em] ${(state === 'ALL' ? !stateFilter : stateFilter === state)
+                      ? 'bg-indigo-600 text-white shadow-[0_0_15px_rgba(79,70,229,0.4)]'
+                      : 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50'
+                      }`}
                   >
                     {state}
                   </button>

@@ -1,4 +1,4 @@
-import { LayoutDashboard, ShieldCheck, Database, Scan, LogOut, Verified, AlertTriangle, UserCircle } from "lucide-react"
+import { LayoutDashboard, ShieldCheck, Database, Scan, LogOut, UserCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Link, useLocation } from "react-router-dom"
 

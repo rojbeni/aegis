@@ -10,10 +10,10 @@ import {
   Settings
 } from "lucide-react"
 import { useState } from "react"
-import type { AuditItemResponse } from "@/types/benchmarks"
+import type { RuleResponse } from "@/types/benchmarks"
 
 interface AuditItemDetailModalProps {
-  item: AuditItemResponse | null
+  item: RuleResponse | null
   onClose: () => void
 }
 

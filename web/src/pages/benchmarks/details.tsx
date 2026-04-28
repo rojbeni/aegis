@@ -21,7 +21,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { useState, useEffect, useMemo } from "react"
 import { useParams, Link } from "react-router-dom"
 import benchmarkService from "@/services/benchmarks"
-import type { BenchmarkResponse } from "@/types/benchmarks"
+import type { BenchmarkResponse, RuleResponse } from "@/types/benchmarks"
 import { AuditItemDetailModal } from "./detail-modal"
 
 interface GroupedSection {
@@ -36,18 +36,18 @@ interface GroupedSection {
     severity: string
     severityColor: string
     severityBg: string
-    raw: AuditItemResponse
+    raw: RuleResponse
   }[]
 }
 
 export default function BenchmarkDetailsPage() {
   const { id } = useParams<{ id: string }>()
   const [benchmark, setBenchmark] = useState<BenchmarkResponse | null>(null)
-  const [items, setItems] = useState<AuditItemResponse[]>([])
+  const [items, setItems] = useState<RuleResponse[]>([])
   const [loading, setLoading] = useState(true)
   const [expandedSections, setExpandedSections] = useState<string[]>([])
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedItem, setSelectedItem] = useState<AuditItemResponse | null>(null)
+  const [selectedItem, setSelectedItem] = useState<RuleResponse | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
@@ -300,7 +300,7 @@ export default function BenchmarkDetailsPage() {
                               <ChevronRight className="h-4 w-4 text-slate-700 opacity-0 group-hover:opacity-100 transition-all" />
                             </div>
                           </div>
-                          
+
                           {control.raw.solution && (
                             <div className="mt-3 pl-16 pr-8">
                               <div className="p-3 bg-slate-900/50 rounded-xl border border-white/5">

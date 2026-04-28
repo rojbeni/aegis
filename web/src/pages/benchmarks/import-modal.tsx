@@ -1,6 +1,6 @@
 import { useState, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, Search, FileCode, Loader2, CheckCircle2, AlertCircle } from "lucide-react"
+import { X, FileCode, Loader2, CheckCircle2, AlertCircle } from "lucide-react"
 import benchmarkService from "@/services/benchmarks"
 
 interface ImportBenchmarkModalProps {
