@@ -5,7 +5,15 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
+# Add the root directory to the python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 from app.core.database import DATABASE_URL, Base
+
+# Import all models here so they are registered with Base.metadata
+from app.modules.asset.models import Asset
+from app.modules.audit.models import AuditInfo, AuditItem
+from app.modules.benchmark.models import Benchmark, Rule
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -18,10 +26,6 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-# Add the root directory to the python path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
-
 config.set_main_option("sqlalchemy.url", DATABASE_URL)
 target_metadata = Base.metadata
 

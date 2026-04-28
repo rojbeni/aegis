@@ -43,6 +43,3 @@ ruff format .
 http://127.0.0.1:8000/redoc
 
 
-docker
-
-docker build -t aegis:latest .

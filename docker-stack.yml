@@ -1,56 +1,68 @@
+version: '3.8'
+
 services:
   postgres:
     image: postgres:16
-    container_name: postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
       POSTGRES_DB: aegis
       POSTGRES_USER: aegis
-      POSTGRES_PASSWORD: aegis
-    ports:
-      - "5432:5432"
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-aegis}
     networks:
       - aegis-net
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+      restart_policy:
+        condition: on-failure
 
   redis:
     image: redis:7-alpine
-    container_name: redis
-    ports:
-      - "6379:6379"
-    networks:
-      - aegis-net
-
-  aegis:
-    image: rojbeni/aegis:latest
-    container_name: aegis
-    ports:
-      - "8000:8000"
-    environment:
-      - DATABASE_URL=postgresql://aegis:aegis@postgres:5432/aegis
-      - FRONTEND_ORIGIN=http://localhost
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/1
     networks:
       - aegis-net
     deploy:
       restart_policy:
         condition: on-failure
 
+  aegis:
+    image: rojbeni/aegis:latest
+    environment:
+      - DATABASE_URL=postgresql://aegis:${DB_PASSWORD:-aegis}@postgres:5432/aegis
+      - FRONTEND_ORIGIN=${FRONTEND_ORIGIN:-http://187.127.225.175}
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/1
+    networks:
+      - aegis-net
+    ports:
+      - "8000:8000"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      update_config:
+        parallelism: 1
+        delay: 10s
+        order: start-first
+
   web:
     image: rojbeni/aegis-web:latest
-    container_name: aegis-web
     ports:
       - "80:80"
     networks:
       - aegis-net
     deploy:
+      replicas: 2
       restart_policy:
         condition: on-failure
+      update_config:
+        parallelism: 1
+        order: start-first
 
 volumes:
   postgres_data:
 
 networks:
   aegis-net:
-    driver: bridge
+    driver: overlay
