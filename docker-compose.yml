@@ -22,20 +22,17 @@ services:
       - aegis-net
 
   aegis:
-    image: rojbeni/aegis:latest
+    build: .
     container_name: aegis
     ports:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgresql://aegis:aegis@postgres:5432/aegis
-      - FRONTEND_ORIGIN=http://localhost
+      - FRONTEND_ORIGIN=http://localhost:5173
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/1
     networks:
       - aegis-net
-    deploy:
-      restart_policy:
-        condition: on-failure
 
   web:
     image: rojbeni/aegis-web:latest
@@ -44,9 +41,8 @@ services:
       - "80:80"
     networks:
       - aegis-net
-    deploy:
-      restart_policy:
-        condition: on-failure
+    profiles:
+      - disabled
 
 volumes:
   postgres_data:

@@ -20,6 +20,7 @@ COPY migrations/ ./migrations/
 RUN pip install --no-cache-dir .
 
 COPY entrypoint.sh .
+RUN sed -i 's/\r$//' entrypoint.sh
 RUN chmod +x entrypoint.sh
 
 # Expose port (for aegis service)
