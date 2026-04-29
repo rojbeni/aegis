@@ -40,24 +40,25 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Copy docker-stack.yml to VPS
-        env:
-          ZO_ROOT_USER_EMAIL: ${{ secrets.ZO_ROOT_USER_EMAIL }}
-          ZO_ROOT_USER_PASSWORD: ${{ secrets.ZO_ROOT_USER_PASSWORD }}
+      - name: Copy Config Files to VPS
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          source: "docker-stack.yml"
+          source: "docker-stack.yml,vector.yaml"
           target: "~/aegis/"
 
       - name: Deploy to Docker Swarm
         uses: appleboy/ssh-action@master
+        env:
+          ZO_ROOT_USER_EMAIL: ${{ secrets.ZO_ROOT_USER_EMAIL }}
+          ZO_ROOT_USER_PASSWORD: ${{ secrets.ZO_ROOT_USER_PASSWORD }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: ZO_ROOT_USER_EMAIL,ZO_ROOT_USER_PASSWORD
           script: |
             cd ~/aegis
             docker stack deploy -c docker-stack.yml aegis --with-registry-auth
