@@ -7,12 +7,12 @@ sinks:
   openobserve:
     type: http
     inputs: ["aegis"]
-    uri: "http://aegis_openobserve:5080/api/default/aegis/_json"
+    uri: "http://openobserve:5080/api/default/aegis/_json"
     method: post
     auth:
       strategy: basic
-      user: admin@example.com
-      password: password123
+      user: "admin@example.com"
+      password: "password123"
     encoding:
       codec: json
 
