@@ -1,7 +1,6 @@
 sources:
   docker_logs:
     type: docker_logs
-    # Match containers starting with aegis_aegis (stack_service)
     include_containers: ["~^aegis_aegis"]
 
 sinks:
@@ -12,8 +11,8 @@ sinks:
     method: post
     auth:
       strategy: basic
-      user: ${ZO_ROOT_USER_EMAIL}
-      password: ${ZO_ROOT_USER_PASSWORD}
+      user: admin@example.com
+      password: password123
     encoding:
       codec: json
 
