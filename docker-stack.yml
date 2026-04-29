@@ -26,6 +26,30 @@ services:
       restart_policy:
         condition: on-failure
 
+  openobserve:
+    image: public.ecr.aws/zinclabs/openobserve:latest
+    container_name: openobserve
+    ports:
+      - "5080:5080"
+    environment:
+      - ZO_ROOT_USER_EMAIL=${ZO_ROOT_USER_EMAIL}
+      - ZO_ROOT_USER_PASSWORD=${ZO_ROOT_USER_PASSWORD}
+    volumes:
+      - o2_data:/data
+    networks:
+      - aegis-net
+
+  vector:
+    image: timberio/vector:0.34.X-debian
+    container_name: vector
+    volumes:
+      - ./vector.yaml:/etc/vector/vector.yaml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - openobserve
+    networks:
+      - aegis-net
+
   aegis:
     image: rojbeni/aegis:latest
     environment:
@@ -33,6 +57,7 @@ services:
       - FRONTEND_ORIGIN=${FRONTEND_ORIGIN:-http://187.127.225.175}
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - LOG_JSON=true
     networks:
       - aegis-net
     ports:
@@ -62,6 +87,7 @@ services:
 
 volumes:
   postgres_data:
+  o2_data:
 
 networks:
   aegis-net:

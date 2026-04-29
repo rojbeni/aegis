@@ -1,0 +1,36 @@
+sources:
+  docker_logs:
+    type: docker_logs
+    include_containers: ["aegis"]
+
+sinks:
+  openobserve:
+    type: http
+    inputs: ["aegis"]
+    uri: "http://openobserve:5080/api/default/aegis/_json"
+    method: post
+    auth:
+      strategy: basic
+      user: "${ZO_ROOT_USER_EMAIL}"
+      password: "${ZO_ROOT_USER_PASSWORD}"
+    encoding:
+      codec: json
+
+transforms:
+  aegis:
+    type: remap
+    inputs: ["docker_logs"]
+    source: |
+      parsed, err = parse_json(.message)
+      if err == null {
+        # Fix: handle fallible merge assignment
+        ., err = merge(., parsed)
+        if err == null {
+          del(.message)
+        }
+      }
+
+      # Safely normalize level
+      if exists(.level) {
+          .level = upcase(to_string(.level) ?? "INFO")
+      }

@@ -50,6 +50,9 @@ jobs:
           target: "~/aegis/"
 
       - name: Deploy to Docker Swarm
+        env:
+          ZO_ROOT_USER_EMAIL: ${{ secrets.ZO_ROOT_USER_EMAIL }}
+          ZO_ROOT_USER_PASSWORD: ${{ secrets.ZO_ROOT_USER_PASSWORD }}
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SSH_HOST }}

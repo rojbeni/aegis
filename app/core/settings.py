@@ -5,6 +5,7 @@ class Settings(BaseSettings):
     FRONTEND_ORIGIN: str
     CELERY_BROKER_URL: str
     CELERY_RESULT_BACKEND: str
+    LOG_JSON: bool = True
 
     model_config = {
         "env_file": ".env",

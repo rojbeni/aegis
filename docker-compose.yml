@@ -21,6 +21,30 @@ services:
     networks:
       - aegis-net
 
+  openobserve:
+    image: public.ecr.aws/zinclabs/openobserve:latest
+    container_name: openobserve
+    ports:
+      - "5080:5080"
+    environment:
+      - ZO_ROOT_USER_EMAIL=admin@example.com
+      - ZO_ROOT_USER_PASSWORD=password123
+    volumes:
+      - o2_data:/data
+    networks:
+      - aegis-net
+
+  vector:
+    image: timberio/vector:0.34.X-debian
+    container_name: vector
+    volumes:
+      - ./vector.yaml:/etc/vector/vector.yaml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      - openobserve
+    networks:
+      - aegis-net
+
   aegis:
     build: .
     container_name: aegis
@@ -31,6 +55,7 @@ services:
       - FRONTEND_ORIGIN=http://localhost:5173
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/1
+      - LOG_JSON=true
     networks:
       - aegis-net
 
@@ -46,6 +71,7 @@ services:
 
 volumes:
   postgres_data:
+  o2_data:
 
 networks:
   aegis-net:
