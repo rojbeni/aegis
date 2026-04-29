@@ -23,7 +23,7 @@ services:
 
   openobserve:
     image: public.ecr.aws/zinclabs/openobserve:latest
-    container_name: openobserve
+    container_name: aegis_openobserve
     ports:
       - "5080:5080"
     environment:
@@ -47,7 +47,7 @@ services:
 
   aegis:
     build: .
-    container_name: aegis
+    container_name: aegis_aegis
     ports:
       - "8000:8000"
     environment:

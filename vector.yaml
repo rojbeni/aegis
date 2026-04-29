@@ -12,8 +12,8 @@ sinks:
     method: post
     auth:
       strategy: basic
-      user: "${ZO_ROOT_USER_EMAIL}"
-      password: "${ZO_ROOT_USER_PASSWORD}"
+      user: ${ZO_ROOT_USER_EMAIL}
+      password: ${ZO_ROOT_USER_PASSWORD}
     encoding:
       codec: json
 
