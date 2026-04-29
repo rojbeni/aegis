@@ -8,7 +8,7 @@ sinks:
   openobserve:
     type: http
     inputs: ["aegis"]
-    uri: "http://openobserve:5080/api/default/aegis/_json"
+    uri: "http://aegis_openobserve:5080/api/default/aegis/_json"
     method: post
     auth:
       strategy: basic
