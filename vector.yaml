@@ -1,7 +1,8 @@
 sources:
   docker_logs:
     type: docker_logs
-    include_containers: ["~^aegis_aegis"]
+    include_labels:
+      - "com.docker.swarm.service.name=aegis_aegis"
 
 sinks:
   openobserve:

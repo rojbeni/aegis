@@ -38,6 +38,9 @@ services:
       - o2_data:/data
     networks:
       - aegis-net
+    deploy:
+      restart_policy:
+        condition: on-failure      
 
   vector:
     image: timberio/vector:0.34.X-debian
@@ -51,7 +54,6 @@ services:
     networks:
       - aegis-net
     deploy:
-      mode: global
       restart_policy:
         condition: on-failure
 
